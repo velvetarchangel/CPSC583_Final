@@ -108,10 +108,10 @@
 <body>
 <h1>CPSC 583 Final Project: NHL Visualization</h1>
 
-<input type="radio" id="id" name="Goalie" checked="checked">
+<input type="radio" id="radio_id" name="Goalie" checked="checked">
 <text>Goalie ID</text>
 
-<input type="radio" id="name" name="Goalie">
+<input type="radio" id="radio_name" name="Goalie">
 <text>Goalie Name</text>
 
 <!--<input type="checkbox" name="my-checkbox" style="width=100; height=100" checked>-->
@@ -336,7 +336,11 @@
             })
             .on("click", function (d) {
                 let goalie_id = document.getElementById('goalie_id');
-                goalie_id.value = d.goalie;
+                if (filter_mode === 0) {
+                    goalie_id.value = d.goalie;
+                } else {
+                    goalie_id.value = d.firstName + ' ' + d.lastName;
+                }
 
             })
             .on("mouseout", function (d) {
@@ -364,10 +368,39 @@
     let compare = document.getElementById('compare');
     let reset = document.getElementById('reset');
     let goals = document.getElementById('goals');
+    let radio_id = document.getElementById('radio_id');
+    let radio_name = document.getElementById('radio_name');
     let selected = [];
     let currentdata = [];
     let checked = false;
     let compare_mode = false;
+    let goalieID = 0;
+    let filter_mode = 0;
+    let goalie_name = '';
+    let selected_name = [];
+
+    async function getGoalieID(goalieFName, goalieLName) {
+        let rtn = false;
+        goalieID = 0;
+        await nhl.forEach(d => {
+            if (d.firstName === goalieFName && d.lastName === goalieLName) {
+                goalieID = d.goalie;
+                goalie_name = d.firstName + ' ' + d.lastName;
+                rtn = true;
+            }
+        });
+        return rtn;
+    }
+
+    radio_id.onclick = function () {
+        filter_mode = 0;
+        goalie_id.value = "Please enter goalieID";
+    };
+
+    radio_name.onclick = function () {
+        filter_mode = 1;
+        goalie_id.value = "Please enter goalieName";
+    };
 
     goals.onclick = function (d) {
         checked = d.toElement.checked;
@@ -417,10 +450,22 @@
 
     goalie_filter.onclick = function () {
 
+        if (filter_mode === 0) {
+            goalieID = goalie_id.value;
+        } else {
+            let fullname = goalie_id.value.split(' ');
+            getGoalieID(fullname[0], fullname[1]).then(bool => {
+                if (bool === false) {
+                    alert("This goalie does not exist");
+                    return;
+                }
+            });
+        }
+
         let filtered = [];
 
         nhl.forEach(d => {
-            if (d.goalie === goalie_id.value) {
+            if (d.goalie === goalieID) {
                 filtered.push(d);
             }
         });
@@ -467,22 +512,62 @@
 
     goalie_select.onclick = function () {
 
-        if (compare_mode === true){
+        if (filter_mode === 0) {
+            goalieID = goalie_id.value;
+        } else {
+            let fullname = goalie_id.value.split(' ');
+            getGoalieID(fullname[0], fullname[1]).then(bool => {
+                if (bool === false) {
+                    alert("This goalie does not exist");
+                    return;
+                }
+            });
+
+
+        }
+
+        if (compare_mode === true) {
             alert("Compare mode does not support selection");
             return;
         }
 
-        selected.push(goalie_id.value);
+        selected.push(goalieID);
+        selected_name.push(goalie_name);
 
         if (selected.length > 2) {
             alert("You can only compare the first two selections!");
         }
 
-        if (selected.length === 1) {
-            goalie_1.text(selected[0]);
-        } else if (selected.length === 2) {
-            goalie_2.text(selected[1]);
+        if (filter_mode === 0) {
+            if (selected.length === 1) {
+                goalie_1
+                    .text(selected[0])
+                    .style("fill", function (d) {
+                        return getGolieColor(selected[0]);
+                    });
+            } else if (selected.length === 2) {
+                goalie_2
+                    .text(selected[1])
+                    .style("fill", function (d) {
+                        return getGolieColor(selected[1]);
+                    });
+            }
+        } else {
+            if (selected.length === 1) {
+                goalie_1
+                    .text(selected_name[0])
+                    .style("fill", function (d) {
+                        return getGolieColor(selected[0]);
+                    });
+            } else if (selected.length === 2) {
+                goalie_2
+                    .text(selected_name[1])
+                    .style("fill", function (d) {
+                        return getGolieColor(selected[1]);
+                    });
+            }
         }
+
 
         scatterplot.selectAll(".dot")
             .data(nhl)
@@ -577,7 +662,7 @@
         } else {
             alert("Please select at least two goalies!");
         }
-    }
+    };
 
     reset.onclick = function () {
         selected = [];
@@ -616,7 +701,12 @@
             })
             .on("click", function (d) {
                 let goalie_id = document.getElementById('goalie_id');
-                goalie_id.value = d.goalie;
+                if (filter_mode === 0) {
+                    goalie_id.value = d.goalie;
+                } else {
+                    goalie_id.value = d.firstName + ' ' + d.lastName;
+                }
+
 
             })
             .on("mouseout", function (d, i) {
