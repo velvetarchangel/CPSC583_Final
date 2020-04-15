@@ -53,7 +53,6 @@ d3.csv("NHL_fullset.csv", function(data) {
         .call(d3.axisLeft(y));
 
     //this creates the filtered list with the top name being the right side and bottom filter for the left
-    var goalsInHexbin = [];
     var shotsInHexbin = [];
     data.forEach(function(d) {
         //console.log(d);
