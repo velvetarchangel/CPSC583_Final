@@ -28,7 +28,7 @@
     let goalie1 = "";
     let goalie2 = "";
     let shotsInHexbin = [];
-    let heatScatter = false;
+    let heatScatter = true;
 
     d3.csv("NHL_fullset.csv", function(data) {
         //for (var i = 0; i < data.length; i++) {
@@ -44,10 +44,21 @@
                 goaliesToChoose.set(d.firstName.concat(" ", d.lastName), {
                     fullname: d.firstName.concat(" ", d.lastName),
                     lastname: d.lastName,
-                    goalieID: d.idgoalies
+                    goalieID: d.idgoalies,
+                    dob: d.dob,
+                    nationality: d.nationality,
+                    height: d.height,
+                    weight: d.weight,
+                    rookie: d.rookie,
+                    catchingHand: d.catchhand
                 });
             console.log("setting " + d.firstName.concat(" ", d.lastName));
             }
+        });
+        goaliesToChoose.set("Select a Goalie", {
+            fullname: "Select a Goalie",
+            lastname: " _'",
+            goalieID: ""
         });
 
         //draw selection box 1
@@ -79,17 +90,17 @@
                 //console.log(d);
                 if(goalie1!=""||goalie2!="") {
                     if (d.idgoalies === goalie1 && d.x > 4)
-                        shotsInHexbin.push([x(-1*d.x), y(-1*d.y), d.goal]);
+                        shotsInHexbin.push([x(-1*d.x), y(-1*d.y), d.goal, d.type, d.strength]);
                     if(goalie2!=""){
                         if (d.idgoalies===goalie2 && d.x>4)
-                            shotsInHexbin.push( [x(d.x), y(d.y), d.goal] );
+                            shotsInHexbin.push( [x(d.x), y(d.y), d.goal, d.type, d.strength] );
                     }else{
                         if (d.idgoalies !== goalie1 && d.x > 4)
-                            shotsInHexbin.push( [x(d.x), y(d.y), d.goal] );
+                            shotsInHexbin.push( [x(d.x), y(d.y), d.goal, d.type, d.strength] );
                     }
                 }else{
                     if (d.x > 4)
-                        shotsInHexbin.push([x(-1*d.x), y(-1*d.y), d.goal]);
+                        shotsInHexbin.push([x(-1*d.x), y(-1*d.y), d.goal, d.type, d.strength]);
                 }
 
             });
@@ -167,17 +178,17 @@
                 //console.log(d);
                 if(goalie1!=""||goalie2!="") {
                     if (d.idgoalies === goalie1 && d.x > 4)
-                        shotsInHexbin.push([x(-1*d.x), y(-1*d.y), d.goal]);
+                        shotsInHexbin.push([x(-1*d.x), y(-1*d.y), d.goal, d.type, d.strength]);
                     if(goalie2!=""){
                         if (d.idgoalies===goalie2 && d.x>4)
-                            shotsInHexbin.push( [x(d.x), y(d.y), d.goal] );
+                            shotsInHexbin.push( [x(d.x), y(d.y), d.goal, d.type, d.strength] );
                     }else{
                         if (d.idgoalies !== goalie1 && d.x > 4)
-                            shotsInHexbin.push( [x(d.x), y(d.y), d.goal] );
+                            shotsInHexbin.push( [x(d.x), y(d.y), d.goal, d.type, d.strength] );
                     }
                 }else{
                     if (d.x > 4)
-                        shotsInHexbin.push([x(-1*d.x), y(-1*d.y), d.goal]);
+                        shotsInHexbin.push([x(-1*d.x), y(-1*d.y), d.goal, d.type, d.strength]);
                 }
 
             });
@@ -259,21 +270,27 @@
             .call(d3.axisLeft(y));
 
         //this creates the filtered list with the top name being the right side and bottom filter for the left
+        shotsInHexbin = [];
         data.forEach(function(d) {
             //console.log(d);
             if(goalie1!=""||goalie2!="") {
-                if (d.idgoalies === goalie1 && d.x > 4)
-                    shotsInHexbin.push([x(-1*d.x), y(-1*d.y), d.goal]);
+                if (d.idgoalies === goalie1 && d.x > 4) {
+                    shotsInHexbin.push([x(-1 * d.x), y(-1 * d.y), d.goal, d.type, d.strength]);
+                }
                 if(goalie2!=""){
-                    if (d.idgoalies===goalie2 && d.x>4)
-                        shotsInHexbin.push( [x(d.x), y(d.y), d.goal] );
+                    if (d.idgoalies===goalie2 && d.x>4) {
+                        shotsInHexbin.push([x(d.x), y(d.y), d.goal, d.type, d.strength]);
+                    }
                 }else{
-                    if (d.idgoalies !== goalie1 && d.x > 4)
-                        shotsInHexbin.push( [x(d.x), y(d.y), d.goal] );
+                    if (d.idgoalies !== goalie1 && d.x > 4) {
+                        shotsInHexbin.push([x(d.x), y(d.y), d.goal, d.type, d.strength]);
+                    }
                 }
             }else{
-                if (d.x > 4)
-                    shotsInHexbin.push([x(-1*d.x), y(-1*d.y), d.goal]);
+                if (d.x > 4) {
+                    shotsInHexbin.push([x(-1 * d.x), y(-1 * d.y), d.goal, d.type, d.strength]);
+                    console.log(x(-1 * d.x) + " " + y(-1 * d.y));
+                }
             }
 
         });
@@ -282,7 +299,15 @@
         if (heatScatter){
 
 
-            /*** Candy draw your chart here the svg has the background already set up above***/
+            svg.append('g')
+                .selectAll("dot")
+                .data(shotsInHexbin)
+                .enter()
+                .append("circle")
+                .attr("cx", function (d) { return d[0]; } )
+                .attr("cy", function (d) { return d[1]; } )
+                .attr("r", 1.5)
+                .style("fill", "#69b3a2")
 
 
         }else {
@@ -294,7 +319,7 @@
 
             // Compute the hexbin data
             var hexbin = d3.hexbin()
-                .radius(16) // THE 3 BINS SIZES THAT WORK ARE 10, 16, AND 20
+                .radius(20) // THE 3 BINS SIZES THAT WORK ARE 10, 16, AND 20
                 .extent([[0, 0], [width, height]]);
 
             // Plot the hexbins
