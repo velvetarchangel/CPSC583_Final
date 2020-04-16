@@ -117,22 +117,13 @@ svg {
     padding: 1px 4px;
 }
 
-/*#goalie_1{
-    color: #3e3e3e;
+#goalie_1{
+    float: left;
     font-size: 15px;
-    background-color: #ffffff;
-    border-radius: 1px;
-    border: solid 1px #ff7b91;
-    padding: 10px 16px;
-    margin-right: 10px;"
+
 }
 
 #goalie_2{
-    color: #3e3e3e;
+    float: right;
     font-size: 15px;
-    background-color: #ffffff;
-    border-radius: 1px;
-    border: solid 1px #ff7b91;
-    padding: 10px 16px;
-    margin-right: 10px;"
-}*/
+}
